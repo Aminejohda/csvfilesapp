@@ -16,7 +16,7 @@ var mongoose = require('mongoose');
 const config = require('./config/database')
 mongoose.connect(config.database);
 const db= mongoose.connection;
-let User = require('./model/user')
+let User = require('./Model/user')
 app.set('views',path.join(__dirname,'views'));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }))

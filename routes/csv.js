@@ -16,7 +16,7 @@ const db= mongoose.connection;
 var entete = []
 var variable
 var filename;
-let User = require('../model/user')
+let User = require('../Model/user')
 
 //function parse
 function parcih(req,res) {
