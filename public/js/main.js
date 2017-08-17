@@ -18,7 +18,7 @@
 		 $('#myfile').hide();
         $(".se-pre-con").show();
 		$.ajax({
-			url:'http://localhost:8080/csv',
+			url:'https://csvfilesapp.herokuapp.com/csv',
 			type:'post',
 			data:formData,
 			processData:false,
