@@ -66,3 +66,8 @@ margin-left: 5px;
   background-color: #f2dede;
   border-color: #ebccd1
 }
+#example1_wrapper .row .col-sm-12{
+  width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
