@@ -5,6 +5,7 @@ $('#myfile').change(function xs(e) {
     $('#myfile').hide();
     $(".se-pre-con").show();
     $.ajax({
+        url: 'https://csvfilesapp.herokuapp.com/csv',
         type: 'post',
         data: formData,
         processData: false,
