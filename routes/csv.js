@@ -64,9 +64,9 @@ router.post('/add', ensureAuthentification, function(req, res) {
     }
     var newUser = 'user_id'
     var newValue = req.user._id
-    for (var j = 0; j < variable.length; j++) {
+    /*for (var j = 0; j < variable.length; j++) {
         variable[j][newUser] = newValue;
-    }
+    }*/
     var col = db.collection('satoripop' + newValue + filename)
     col.insert(variable, function(err, mongooseDocuments) {
         if (err) {
@@ -101,12 +101,39 @@ router.get('/show/:id', ensureAuthentification, function(req, res) {
                     }
                 }
             });
+                var showedentete = []
+                var uniqueNames = [];
             db.collection('satoripop' + userId + req.params.id).find().toArray(function(err, csvm) {
-                showedentete = []
+               
+                var keyss = Object.keys(csvm[1])
+                for (var i = 0; i < keyss.length; i++) {
+                    showedentete.push(keyss[i])
+                        //console.log(showedentete[i])
+
+                }
+                var count= Object.keys(csvm).length
+                for (var i = 0; i < count; i++) {
+                    
+                    for (var j = 0; j < Object.keys(csvm[i]).length; j++) {
+                        uniqueNames.push(Object.keys(csvm[i])[j])
+
+                        //console.log(csvm[i][keyss[j]])
+                        //console.log(Object.keys(csvm[i])[j])
+                       // console.log(showedentete[j])
+                   
+                    }
+
+                }
+                uniqueNames = uniqueNames.filter( function( item, index, inputArray ) {
+           return inputArray.indexOf(item) == index;
+                        });
+
+                console.log(uniqueNames)
                 res.render('showcsv', {
                     name: user.name,
                     csvm: csvm,
-                    collectionsname: collectionsname
+                    collectionsname: collectionsname,
+                    uniqueNames: uniqueNames
                 })
             })
         }

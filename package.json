@@ -16,6 +16,7 @@
     "bower": "^1.8.0",
     "chunk": "0.0.2",
     "connect-flash": "^0.1.1",
+    "css-loader": "^0.28.5",
     "csv-parse": "^1.2.1",
     "csv-parser": "^1.11.0",
     "csvtojson": "^1.1.7",
@@ -31,6 +32,7 @@
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "pug": "^2.0.0-rc.3",
-    "socket.io": "^2.0.3"
+    "socket.io": "^2.0.3",
+    "style-loader": "^0.18.2"
   }
 }
