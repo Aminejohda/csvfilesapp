@@ -138,7 +138,7 @@
          
          $(".se-pre-con").show();
          $.ajax({
-             url: 'https://csvfilesapp.herokuapp.com/csv/add',
+             url: 'http://localhost:8080/csv/add',
              type: 'POST',
              data: data,
              success: function() {
