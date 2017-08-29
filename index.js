@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 var server = require('http').createServer(app);
-const io = require('socket.io').listen(4000);
 const multer = require('multer');
 const path = require('path');
 const Baby = require('babyparse');
@@ -86,7 +85,7 @@ app.get('/', ensureAuthentification, function(req, res) {
                 name: user.name,
                 collectionsname: collectionsname
             })
-            console.log(collectionsname)
+            //console.log(collectionsname)
         });
     })
 });
@@ -109,12 +108,7 @@ db.on('error', function(err) {
     console.log(err);
 })
 //socket io
-io.sockets.on('connection', function(socket) {
-    socket.on('next', function(data, req, res) {
-        socket.broadcast.emit('next', data)
-        //console.log("okok");
-    });
-});
+
 
 function ensureAuthentification(req, res, next) {
     if (req.isAuthenticated()) {

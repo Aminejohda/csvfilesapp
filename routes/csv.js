@@ -1,36 +1,24 @@
-const express = require('express');
-const app = express();
-const server = require('http').createServer(app);
-const multer = require('multer');
-const path = require('path');
-const Baby = require('babyparse');
-const bodyParser = require('body-parser');
-const upload = multer({dest: 'uploads/'})
-const fs = require('fs')
-const router = express.Router()
-const mongoose = require('mongoose');
-const config = require('../config/database')
+const express = require('express'),
+app = express(),
+server = require('http').createServer(app),
+multer = require('multer'),
+path = require('path'),
+Baby = require('babyparse'),
+bodyParser = require('body-parser'),
+upload = multer({dest: 'uploads/'}),
+fs = require('fs');
+var io = require('socket.io')(server);
+server.listen(4000);
+const router = express.Router(),
+mongoose = require('mongoose'),
+config = require('../config/database'),
+db = mongoose.connection;
 mongoose.connect(config.database);
-const db = mongoose.connection;
+let User = require('../Model/user')
 var entete = []
 var variable
 var filename;
-let User = require('../Model/user')
-//function parse
-function parcih(req, res) {
-    var file = fs.readFileSync(req.file.path) + ""
-    filename = req.file.originalname;
-
-    Baby.parse(file, {
-        download: true,
-        header: true,
-        dynamicTyping: true,
-        complete: function(results) {
-            donne = results.data
-            var json = JSON.stringify(donne);
-        }
-    });
-}
+var mysocket;
 
 router.post('/', ensureAuthentification, upload.single('myfile'), function(req, res) {
     parcih(req, res);
@@ -45,44 +33,27 @@ router.post('/', ensureAuthentification, upload.single('myfile'), function(req, 
     res.send({donne,entete})
 });
 
-router.post('/add', ensureAuthentification, function(req, res) {
-    var newentete = []
-    var numberentete = Object.keys(req.body).length;
-    for (var i = 0; i < numberentete; i++) {
-        newentete.push(req.param("f" + i))
-    }
-    for (var j = 0; j < variable.length; j++) {
-        for (var i = 0; i < entete.length; i++) {
-            if (entete[i] !== newentete[i] && newentete[i] !== "") {
-                variable[j][newentete[i]] = variable[j][entete[i]]
-                delete variable[j][entete[i]];
-            }
-            if (newentete[i] === "") {
-                delete variable[j][entete[i]];
-            }
-        }
-    }
-    var newUser = 'user_id'
-    var newValue = req.user._id
-    /*for (var j = 0; j < variable.length; j++) {
-        variable[j][newUser] = newValue;
-    }*/
-    var col = db.collection('satoripop' + newValue + filename)
-    col.insert(variable, function(err, mongooseDocuments) {
-        if (err) {
-            console.log(err)
-        } else {
-            variable = new Object();
-            entete = [];
-            console.log('sayee')
-            res.redirect('/')
-        }
-    })
 
+
+router.post('/add', ensureAuthentification, function(req, res) {
+    filterentete(req, res, entete, variable)
+    var newValue = req.user._id
+    var col = db.collection('satoripop' + newValue + filename)
+    var ix = 0
+    var willinserted = (variable.length / 10).toString().split(".")[0];
+ recursive(variable,willinserted,col,ix)
+
+
+    variable = new Object();
+    entete = [];
+    console.log('sayee')
+    res.redirect('/')
 });
+
+
+
 router.get('/show/:id', ensureAuthentification, function(req, res) {
     var userId = req.user._id
-    console.log(userId)
     collectionsname = []
     User.findById(userId, function(err, user) {
         if (err) {
@@ -101,34 +72,19 @@ router.get('/show/:id', ensureAuthentification, function(req, res) {
                     }
                 }
             });
-                var showedentete = []
-                var uniqueNames = [];
+            var uniqueNames = [];
             db.collection('satoripop' + userId + req.params.id).find().toArray(function(err, csvm) {
-               
-                var keyss = Object.keys(csvm[1])
-                for (var i = 0; i < keyss.length; i++) {
-                    showedentete.push(keyss[i])
-                        //console.log(showedentete[i])
-
-                }
-                var count= Object.keys(csvm).length
+                var count = Object.keys(csvm).length
                 for (var i = 0; i < count; i++) {
-                    
+
                     for (var j = 0; j < Object.keys(csvm[i]).length; j++) {
                         uniqueNames.push(Object.keys(csvm[i])[j])
-
-                        //console.log(csvm[i][keyss[j]])
-                        //console.log(Object.keys(csvm[i])[j])
-                       // console.log(showedentete[j])
-                   
                     }
 
                 }
-                uniqueNames = uniqueNames.filter( function( item, index, inputArray ) {
-           return inputArray.indexOf(item) == index;
-                        });
-
-                console.log(uniqueNames)
+                uniqueNames = uniqueNames.filter(function(item, index, inputArray) {
+                    return inputArray.indexOf(item) == index;
+                });
                 res.render('showcsv', {
                     name: user.name,
                     csvm: csvm,
@@ -139,12 +95,64 @@ router.get('/show/:id', ensureAuthentification, function(req, res) {
         }
     })
 });
+var recursive = function(variable,willinserted,col,ix) {
+    //io.sockets.emit('news', ix)
+    var b = variable.splice(0, willinserted);
+     col.insert(b, function(err, mongooseDocuments) {
+             if (ix < 11) {
+                var msg = "this is i " + (ix * 10) + '%'
+                 
+
+        ix++
+        return recursive(variable,willinserted,col,ix);
+    }else{
+        io.on('connection', function(socket) {
+        var msgg = 'finish'
+        console.log(msgg)
+    socket.emit('newss',msgg)
+});
+      
+    }
+
+        })
+}
 function ensureAuthentification(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     } else {
         req.flash('please login')
         res.redirect('/users/login')
+    }
+}
+function parcih(req, res) {
+    var file = fs.readFileSync(req.file.path) + ""
+    filename = req.file.originalname;
+    Baby.parse(file, {
+        download: true,
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+            donne = results.data
+            var json = JSON.stringify(donne);
+        }
+    });
+}
+function filterentete(req, res, entete, variable) {
+    var newentete = []
+    var numberentete = Object.keys(req.body).length;
+    for (var i = 0; i < numberentete; i++) {
+        newentete.push(req.param("f" + i))
+    }
+    for (var j = 0; j < variable.length; j++) {
+        for (var i = 0; i < entete.length; i++) {
+            if (entete[i] !== newentete[i] && newentete[i] !== "") {
+                variable[j][newentete[i]] = variable[j][entete[i]]
+                delete variable[j][entete[i]];
+            }
+            if (newentete[i] === "") {
+                delete variable[j][entete[i]];
+            }
+        }
     }
 }
 module.exports = router;

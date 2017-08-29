@@ -28,13 +28,3 @@ $('#myfile').change(function xs(e) {
         crossDomain: true
     })
 })
-/*var socket = io.connect('http://127.0.0.1:4000');
-if (socket !== undefined) {
-    console.log("every thing okey")
-}
-$(document).on('click', function(event) {
-    $("button").click(function() {
-        //$("div").css({"color":"red"});     
-    });
-    socket.emit('next');
-})*/

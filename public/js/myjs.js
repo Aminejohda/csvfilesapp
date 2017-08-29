@@ -1,3 +1,6 @@
+
+
+
  $(document).ajaxComplete(function(event, request, settings) {
      $("#dob0").prop('readonly', false);
      $("#dob0").focus();
@@ -132,16 +135,44 @@
      $("#finish").click(function() {
          var str = $("form").serializeArray();
          var data = str
-         console.log(data)
+         
          $(".se-pre-con").show();
          $.ajax({
              url: 'https://csvfilesapp.herokuapp.com/csv/add',
              type: 'POST',
              data: data,
              success: function() {
-                 console.log('ajax ok')
+                
                  $(".se-pre-con").hide();
              }
          });
      });
+     var socket = io.connect('http://localhost:4000');
+if (socket !== undefined) {
+  socket.on('news', function (data) {
+    console.log(data);
+  });
+   socket.on('newss', function (data) {
+    console.log(data);
+  });
+   
+}
+  socket.on('newss', function (data) {
+    console.log(data);
+  });
  });
+  $(function () {
+    $("#example1").DataTable();
+    $('#example2').DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "searching": false,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false
+    });
+  });
+       $(window).load(function() {
+    // Animate loader off screen
+    $(".se-pre-con").fadeOut("slow");;
+  });
