@@ -14,11 +14,13 @@ mongoose = require('mongoose'),
 config = require('../config/database'),
 db = mongoose.connection;
 mongoose.connect(config.database);
-let User = require('../Model/user')
+let User = require('../Model/user'),
+Description = require('../Model/description');
 var entete = []
 var variable
 var filename;
 var mysocket;
+var deeesc
 
 router.post('/', ensureAuthentification, upload.single('myfile'), function(req, res) {
     parcih(req, res);
@@ -38,16 +40,26 @@ router.post('/', ensureAuthentification, upload.single('myfile'), function(req, 
 router.post('/add', ensureAuthentification, function(req, res) {
     filterentete(req, res, entete, variable)
     var newValue = req.user._id
-    var col = db.collection('satoripop' + newValue + filename)
+    let namecol = 'satoripop' + newValue + filename
+    var col = db.collection(namecol)
     var ix = 0
     var willinserted = (variable.length / 10).toString().split(".")[0];
  recursive(variable,willinserted,col,ix)
-
+ let desc = new Description();
+ desc.Description = req.body.description
+ desc.Namefile = namecol
+ desc.save(function (err) {
+    if(err){
+console.log(err)
+return;
+    }else{
+console.log(req.body.description)
 
     variable = new Object();
     entete = [];
     console.log('sayee')
-    res.redirect('/')
+    }
+});
 });
 
 
@@ -72,6 +84,11 @@ router.get('/show/:id', ensureAuthentification, function(req, res) {
                     }
                 }
             });
+           Description.findOne({ 'Namefile': 'satoripop' + userId + req.params.id }, 'Description', function (err, person) {
+  if (err) return handleError(err);
+  deeesc = person.Description
+  console.log('this is description', person.Description) // Space Ghost is a talk show host.
+
             var uniqueNames = [];
             db.collection('satoripop' + userId + req.params.id).find().toArray(function(err, csvm) {
                 var count = Object.keys(csvm).length
@@ -89,32 +106,40 @@ router.get('/show/:id', ensureAuthentification, function(req, res) {
                     name: user.name,
                     csvm: csvm,
                     collectionsname: collectionsname,
-                    uniqueNames: uniqueNames
+                    uniqueNames: uniqueNames,
+                    deeesc: deeesc
                 })
+            })
             })
         }
     })
 });
+
 var recursive = function(variable,willinserted,col,ix) {
-    //io.sockets.emit('news', ix)
-    var b = variable.splice(0, willinserted);
-     col.insert(b, function(err, mongooseDocuments) {
-             if (ix < 11) {
-                var msg = "this is i " + (ix * 10) + '%'
-                 
+//io.sockets.emit('news', ix)
+var b = variable.splice(0, willinserted);
+col.insert(b, function(err, mongooseDocuments) {
+         if (ix < 11) {
+            var msg = (ix / 10)
+        console.log(msg)
+         io.sockets.emit('news', msg)
+         if(msg === 1){
+            io.sockets.emit('news', "done")
+        console.log("done")
 
-        ix++
-        return recursive(variable,willinserted,col,ix);
-    }else{
-        io.on('connection', function(socket) {
-        var msgg = 'finish'
-        console.log(msgg)
-    socket.emit('newss',msgg)
-});
-      
-    }
+         }
+        console.log(msg)
+           
+    ix++
+    return recursive(variable,willinserted,col,ix);
 
-        })
+}else{
+     io.sockets.emit('news', "done")
+    console.log("finish")
+    return true;
+}
+})
+
 }
 function ensureAuthentification(req, res, next) {
     if (req.isAuthenticated()) {
@@ -138,6 +163,7 @@ function parcih(req, res) {
     });
 }
 function filterentete(req, res, entete, variable) {
+
     var newentete = []
     var numberentete = Object.keys(req.body).length;
     for (var i = 0; i < numberentete; i++) {
