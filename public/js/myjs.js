@@ -136,7 +136,7 @@
          var str = $("form").serializeArray();
          var data = str
          
-         $(".se-pre-con").show();
+         //$(".se-pre-con").show();
          $.ajax({
              url: 'http://localhost:8080/csv/add',
              type: 'POST',
@@ -147,19 +147,7 @@
              }
          });
      });
-     var socket = io.connect('http://localhost:4000');
-if (socket !== undefined) {
-  socket.on('news', function (data) {
-    console.log(data);
-  });
-   socket.on('newss', function (data) {
-    console.log(data);
-  });
-   
-}
-  socket.on('newss', function (data) {
-    console.log(data);
-  });
+  
  });
   $(function () {
     $("#example1").DataTable();
@@ -176,3 +164,25 @@ if (socket !== undefined) {
     // Animate loader off screen
     $(".se-pre-con").fadeOut("slow");;
   });
+   var socket = io.connect('http://localhost:4000');
+var dat 
+socket.on('news', function (data) {
+    dat = (data *100) + '%' 
+    if(dat !== NaN){
+        
+   $('.labeltask').html('1')
+   $('.labeltask').addClass( "label-danger" )
+   $('#mydiv').css('width', dat);
+   $('.percentte').html(dat)
+    }
+
+if(data ==="done"){
+    $('.labelnoti').html('1')
+   $('.labelnoti').addClass( "label-warning" )
+}
+console.log(dat);
+
+});
+
+
+//console.log("every thing okey")
